@@ -12,6 +12,7 @@ import "./app.css";
 import { getAllUsers, getUserById } from "~/services/userService";
 import { getCurrentUserId } from "~/lib/session";
 import { DevUI } from "~/components/dev-ui";
+import { Sidebar } from "~/components/sidebar";
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -61,10 +62,13 @@ export default function App({ loaderData }: Route.ComponentProps) {
   const { users, currentUser } = loaderData;
 
   return (
-    <>
-      <Outlet />
+    <div className="flex h-screen overflow-hidden">
+      <Sidebar currentUserRole={currentUser?.role ?? null} />
+      <main className="flex-1 overflow-y-auto">
+        <Outlet />
+      </main>
       <DevUI users={users} currentUser={currentUser} />
-    </>
+    </div>
   );
 }
 
