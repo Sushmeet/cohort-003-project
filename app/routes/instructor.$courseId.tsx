@@ -40,6 +40,7 @@ import {
   BookOpen,
   Circle,
   Clock,
+  FileEdit,
   Pencil,
   Plus,
   Trash2,
@@ -1015,6 +1016,15 @@ export default function InstructorCourseEditor({
                                 {lesson.durationMinutes}m
                               </span>
                             )}
+                            <Link to={`/instructor/${course.id}/lessons/${lesson.id}`}>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground"
+                              >
+                                <FileEdit className="size-3.5" />
+                              </Button>
+                            </Link>
                             <DeleteLessonButton
                               lessonId={lesson.id}
                               lessonTitle={lesson.title}
