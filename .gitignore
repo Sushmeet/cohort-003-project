@@ -11,3 +11,4 @@
 *.db-journal
 *.db-wal
 .pnpm-store
+*.db-shm
