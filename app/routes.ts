@@ -15,4 +15,5 @@ export default [
   route("admin/users", "routes/admin.users.tsx"),
   route("admin/courses", "routes/admin.courses.tsx"),
   route("api/switch-user", "routes/api.switch-user.ts"),
+  route("api/video-tracking", "routes/api.video-tracking.ts"),
 ] satisfies RouteConfig;

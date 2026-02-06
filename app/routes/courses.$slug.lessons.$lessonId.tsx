@@ -12,6 +12,10 @@ import {
   markLessonComplete,
   markLessonInProgress,
 } from "~/services/progressService";
+import {
+  getLastWatchPosition,
+  calculateWatchProgress,
+} from "~/services/videoTrackingService";
 import { getQuizByLessonId, getQuizWithQuestions, getBestAttempt } from "~/services/quizService";
 import { computeResult } from "~/services/quizScoringService";
 import { LessonProgressStatus } from "~/db/schema";
@@ -22,14 +26,13 @@ import {
   CheckCircle2,
   ChevronLeft,
   ChevronRight,
-  Circle,
   Clock,
-  PlayCircle,
   HelpCircle,
   XCircle,
   Trophy,
   RotateCcw,
 } from "lucide-react";
+import { YouTubePlayer } from "~/components/youtube-player";
 import { data, isRouteErrorResponse } from "react-router";
 
 export function meta({ data: loaderData }: Route.MetaArgs) {
@@ -104,6 +107,8 @@ export async function loader({ params, request }: Route.LoaderArgs) {
   const currentUserId = await getCurrentUserId(request);
   let enrolled = false;
   let lessonStatus: string | null = null;
+  let lastWatchPosition = 0;
+  let watchProgress = 0;
 
   if (currentUserId) {
     enrolled = isUserEnrolled(currentUserId, course.id);
@@ -113,6 +118,19 @@ export async function loader({ params, request }: Route.LoaderArgs) {
       markLessonInProgress(currentUserId, lessonId);
       const progress = getLessonProgress(currentUserId, lessonId);
       lessonStatus = progress?.status ?? null;
+
+      // Get video watch state for resume and progress display
+      if (lesson.videoUrl) {
+        lastWatchPosition = getLastWatchPosition(currentUserId, lessonId);
+        const videoDurationSeconds = (lesson.durationMinutes ?? 0) * 60;
+        if (videoDurationSeconds > 0) {
+          watchProgress = calculateWatchProgress(
+            currentUserId,
+            lessonId,
+            videoDurationSeconds
+          );
+        }
+      }
     }
   }
 
@@ -188,6 +206,8 @@ export async function loader({ params, request }: Route.LoaderArgs) {
     nextLesson,
     quiz,
     bestAttempt,
+    lastWatchPosition,
+    watchProgress,
   };
 }
 
@@ -258,6 +278,8 @@ export default function LessonViewer({ loaderData }: Route.ComponentProps) {
     nextLesson,
     quiz,
     bestAttempt,
+    lastWatchPosition,
+    watchProgress,
   } = loaderData;
   const fetcher = useFetcher();
   const quizFetcher = useFetcher();
@@ -306,15 +328,15 @@ export default function LessonViewer({ loaderData }: Route.ComponentProps) {
 
         {/* YouTube Video */}
         {lesson.videoUrl && (
-          <div className="mb-8 aspect-video overflow-hidden rounded-lg">
-            <iframe
-              src={toYouTubeEmbedUrl(lesson.videoUrl)}
-              title={lesson.title}
-              className="h-full w-full"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowFullScreen
-            />
-          </div>
+          <YouTubePlayer
+            videoUrl={lesson.videoUrl}
+            lessonId={lesson.id}
+            title={lesson.title}
+            startPosition={lastWatchPosition}
+            durationMinutes={lesson.durationMinutes}
+            watchProgress={watchProgress}
+            trackingEnabled={enrolled && !!currentUserId}
+          />
         )}
 
         {/* Lesson Content */}
@@ -646,10 +668,6 @@ function QuizSection({
   );
 }
 
-/**
- * Converts various YouTube URL formats to an embeddable URL.
- * Returns the original string if it doesn't match a known YouTube pattern.
- */
 export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
   let title = "Something went wrong";
   let message = "An unexpected error occurred while loading this lesson.";
@@ -686,19 +704,3 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
   );
 }
 
-function toYouTubeEmbedUrl(url: string): string {
-  // Already an embed URL
-  if (url.includes("youtube.com/embed/")) return url;
-
-  // https://www.youtube.com/watch?v=VIDEO_ID
-  const watchMatch = url.match(
-    /(?:youtube\.com\/watch\?v=)([a-zA-Z0-9_-]+)/
-  );
-  if (watchMatch) return `https://www.youtube.com/embed/${watchMatch[1]}`;
-
-  // https://youtu.be/VIDEO_ID
-  const shortMatch = url.match(/(?:youtu\.be\/)([a-zA-Z0-9_-]+)/);
-  if (shortMatch) return `https://www.youtube.com/embed/${shortMatch[1]}`;
-
-  return url;
-}
