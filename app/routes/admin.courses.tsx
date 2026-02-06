@@ -13,6 +13,7 @@ import { getUserById } from "~/services/userService";
 import { UserRole, CourseStatus } from "~/db/schema";
 import { Card, CardContent } from "~/components/ui/card";
 import { Button } from "~/components/ui/button";
+import { Skeleton } from "~/components/ui/skeleton";
 import {
   Select,
   SelectContent,
@@ -188,6 +189,55 @@ function CourseRow({
         {formattedDate}
       </td>
     </tr>
+  );
+}
+
+function CourseRowSkeleton() {
+  return (
+    <tr className="border-b border-border last:border-0">
+      <td className="px-4 py-3">
+        <Skeleton className="mb-1 h-4 w-40" />
+        <Skeleton className="h-3 w-24" />
+      </td>
+      <td className="px-4 py-3"><Skeleton className="h-8 w-32" /></td>
+      <td className="px-4 py-3"><Skeleton className="h-4 w-8" /></td>
+      <td className="px-4 py-3"><Skeleton className="h-4 w-8" /></td>
+      <td className="px-4 py-3"><Skeleton className="h-4 w-24" /></td>
+    </tr>
+  );
+}
+
+export function HydrateFallback() {
+  return (
+    <div className="p-6 lg:p-8">
+      <div className="mb-8">
+        <Skeleton className="h-9 w-52" />
+        <Skeleton className="mt-2 h-5 w-72" />
+      </div>
+      <Skeleton className="mb-4 h-5 w-28" />
+      <Card>
+        <CardContent className="p-0">
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-border bg-muted/50">
+                  <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">Course</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">Status</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">Lessons</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">Students</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">Created</th>
+                </tr>
+              </thead>
+              <tbody>
+                {Array.from({ length: 4 }).map((_, i) => (
+                  <CourseRowSkeleton key={i} />
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
   );
 }
 

@@ -164,3 +164,18 @@
   outline: 2px solid var(--primary);
   outline-offset: 2px;
 }
+
+/* Navigation loading bar */
+@keyframes loading-bar-shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(200%);
+  }
+}
+
+.loading-bar-shimmer {
+  width: 50%;
+  animation: loading-bar-shimmer 1.2s ease-in-out infinite;
+}

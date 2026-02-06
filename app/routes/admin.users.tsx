@@ -8,6 +8,7 @@ import { getUserById } from "~/services/userService";
 import { UserRole } from "~/db/schema";
 import { Card, CardContent, CardHeader } from "~/components/ui/card";
 import { Button } from "~/components/ui/button";
+import { Skeleton } from "~/components/ui/skeleton";
 import {
   Select,
   SelectContent,
@@ -289,6 +290,52 @@ function EditableUserRow({
         )}
       </td>
     </tr>
+  );
+}
+
+function TableRowSkeleton() {
+  return (
+    <tr className="border-b border-border last:border-0">
+      <td className="px-4 py-3"><Skeleton className="h-4 w-28" /></td>
+      <td className="px-4 py-3"><Skeleton className="h-4 w-40" /></td>
+      <td className="px-4 py-3"><Skeleton className="h-8 w-32" /></td>
+      <td className="px-4 py-3"><Skeleton className="h-4 w-24" /></td>
+      <td className="px-4 py-3"><Skeleton className="size-7" /></td>
+    </tr>
+  );
+}
+
+export function HydrateFallback() {
+  return (
+    <div className="p-6 lg:p-8">
+      <div className="mb-8">
+        <Skeleton className="h-9 w-48" />
+        <Skeleton className="mt-2 h-5 w-80" />
+      </div>
+      <Skeleton className="mb-4 h-5 w-28" />
+      <Card>
+        <CardContent className="p-0">
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-border bg-muted/50">
+                  <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">Name</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">Email</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">Role</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">Created</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {Array.from({ length: 8 }).map((_, i) => (
+                  <TableRowSkeleton key={i} />
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
   );
 }
 

@@ -6,6 +6,7 @@ import { getCurrentUserId } from "~/lib/session";
 import { getUserById } from "~/services/userService";
 import { Card, CardContent, CardFooter, CardHeader } from "~/components/ui/card";
 import { Button } from "~/components/ui/button";
+import { Skeleton } from "~/components/ui/skeleton";
 import { AlertTriangle, BookOpen, GraduationCap, Plus, Users } from "lucide-react";
 import { data, isRouteErrorResponse } from "react-router";
 import { CourseStatus, UserRole } from "~/db/schema";
@@ -80,6 +81,40 @@ function statusBadge(status: string) {
     default:
       return null;
   }
+}
+
+export function HydrateFallback() {
+  return (
+    <div className="p-6 lg:p-8">
+      <div className="mb-8 flex items-center justify-between">
+        <div>
+          <Skeleton className="h-9 w-40" />
+          <Skeleton className="mt-2 h-5 w-72" />
+        </div>
+        <Skeleton className="h-10 w-32" />
+      </div>
+      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        {Array.from({ length: 3 }).map((_, i) => (
+          <Card key={i} className="flex flex-col">
+            <Skeleton className="aspect-video rounded-b-none rounded-t-lg" />
+            <CardHeader>
+              <Skeleton className="h-5 w-3/4" />
+              <Skeleton className="h-4 w-full" />
+            </CardHeader>
+            <CardContent className="flex-1">
+              <div className="flex items-center gap-4">
+                <Skeleton className="h-4 w-20" />
+                <Skeleton className="h-4 w-20" />
+              </div>
+            </CardContent>
+            <CardFooter>
+              <Skeleton className="h-10 w-full" />
+            </CardFooter>
+          </Card>
+        ))}
+      </div>
+    </div>
+  );
 }
 
 export default function InstructorDashboard({

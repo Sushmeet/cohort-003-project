@@ -5,6 +5,7 @@ import { calculateProgress, getCompletedLessonCount, getTotalLessonCount, getNex
 import { getCurrentUserId } from "~/lib/session";
 import { Card, CardContent, CardFooter, CardHeader } from "~/components/ui/card";
 import { Button } from "~/components/ui/button";
+import { Skeleton } from "~/components/ui/skeleton";
 import { AlertTriangle, BookOpen, CheckCircle2, GraduationCap, PlayCircle } from "lucide-react";
 import { data, isRouteErrorResponse } from "react-router";
 
@@ -58,6 +59,45 @@ export async function loader({ request }: Route.LoaderArgs) {
   const inProgressCourses = coursesWithProgress.filter((c) => !c.isCompleted);
 
   return { inProgressCourses, completedCourses };
+}
+
+function DashboardCardSkeleton() {
+  return (
+    <Card className="flex flex-col">
+      <Skeleton className="aspect-video rounded-b-none rounded-t-lg" />
+      <CardHeader>
+        <Skeleton className="h-5 w-3/4" />
+        <Skeleton className="h-4 w-full" />
+      </CardHeader>
+      <CardContent className="flex-1">
+        <div className="mb-2 flex items-center justify-between">
+          <Skeleton className="h-4 w-24" />
+          <Skeleton className="h-4 w-10" />
+        </div>
+        <Skeleton className="h-2 w-full rounded-full" />
+      </CardContent>
+      <CardFooter>
+        <Skeleton className="h-10 w-full" />
+      </CardFooter>
+    </Card>
+  );
+}
+
+export function HydrateFallback() {
+  return (
+    <div className="p-6 lg:p-8">
+      <div className="mb-8">
+        <Skeleton className="h-9 w-48" />
+        <Skeleton className="mt-2 h-5 w-64" />
+      </div>
+      <Skeleton className="mb-4 h-6 w-32" />
+      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        {Array.from({ length: 3 }).map((_, i) => (
+          <DashboardCardSkeleton key={i} />
+        ))}
+      </div>
+    </div>
+  );
 }
 
 export default function Dashboard({ loaderData }: Route.ComponentProps) {

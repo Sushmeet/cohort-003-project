@@ -5,6 +5,7 @@ import {
   Outlet,
   Scripts,
   ScrollRestoration,
+  useNavigation,
 } from "react-router";
 
 import type { Route } from "./+types/root";
@@ -71,11 +72,26 @@ export async function loader({ request }: Route.LoaderArgs) {
   };
 }
 
+function NavigationLoadingBar() {
+  const navigation = useNavigation();
+  const isLoading = navigation.state === "loading";
+
+  if (!isLoading) return null;
+
+  return (
+    <div className="fixed inset-x-0 top-0 z-50 h-1">
+      <div className="h-full w-full animate-pulse bg-primary/60" />
+      <div className="loading-bar-shimmer absolute inset-0 h-full bg-primary" />
+    </div>
+  );
+}
+
 export default function App({ loaderData }: Route.ComponentProps) {
   const { users, currentUser } = loaderData;
 
   return (
     <div className="flex h-screen overflow-hidden">
+      <NavigationLoadingBar />
       <Sidebar currentUserRole={currentUser?.role ?? null} />
       <main className="flex-1 overflow-y-auto">
         <Outlet />

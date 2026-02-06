@@ -1,9 +1,10 @@
-import { Form, Link, useSearchParams, isRouteErrorResponse } from "react-router";
+import { Form, Link, useSearchParams, useNavigation, isRouteErrorResponse } from "react-router";
 import type { Route } from "./+types/courses";
 import { buildCourseQuery, getAllCategories, getLessonCountForCourse } from "~/services/courseService";
 import { CourseStatus } from "~/db/schema";
 import { Card, CardContent, CardFooter, CardHeader } from "~/components/ui/card";
 import { Button } from "~/components/ui/button";
+import { Skeleton } from "~/components/ui/skeleton";
 import { AlertTriangle, BookOpen, Search, User } from "lucide-react";
 
 export function meta() {
@@ -37,9 +38,54 @@ export function loader({ request }: Route.LoaderArgs) {
   return { courses: coursesWithLessonCount, categories, search, category };
 }
 
+function CourseCardSkeleton() {
+  return (
+    <Card className="h-full">
+      <Skeleton className="aspect-video rounded-b-none rounded-t-lg" />
+      <CardHeader>
+        <Skeleton className="mb-1 h-3 w-16" />
+        <Skeleton className="h-5 w-3/4" />
+      </CardHeader>
+      <CardContent>
+        <Skeleton className="mb-1 h-3 w-full" />
+        <Skeleton className="h-3 w-2/3" />
+      </CardContent>
+      <CardFooter className="flex items-center justify-between">
+        <Skeleton className="h-3 w-20" />
+        <Skeleton className="h-3 w-16" />
+      </CardFooter>
+    </Card>
+  );
+}
+
+export function HydrateFallback() {
+  return (
+    <div className="p-6 lg:p-8">
+      <div className="mb-8">
+        <Skeleton className="h-9 w-48" />
+        <Skeleton className="mt-2 h-5 w-64" />
+      </div>
+      <div className="mb-8 flex flex-col gap-4 sm:flex-row">
+        <Skeleton className="h-10 flex-1" />
+        <Skeleton className="h-10 w-40" />
+        <Skeleton className="h-10 w-20" />
+      </div>
+      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        {Array.from({ length: 6 }).map((_, i) => (
+          <CourseCardSkeleton key={i} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export default function CourseCatalog({ loaderData }: Route.ComponentProps) {
   const { courses, categories, search, category } = loaderData;
   const [searchParams] = useSearchParams();
+  const navigation = useNavigation();
+  const isSearching =
+    navigation.state === "loading" &&
+    navigation.location?.pathname === "/courses";
 
   return (
     <div className="p-6 lg:p-8">
@@ -78,7 +124,13 @@ export default function CourseCatalog({ loaderData }: Route.ComponentProps) {
       </Form>
 
       {/* Course Grid */}
-      {courses.length === 0 ? (
+      {isSearching ? (
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <CourseCardSkeleton key={i} />
+          ))}
+        </div>
+      ) : courses.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 text-center">
           <BookOpen className="mb-4 size-12 text-muted-foreground/50" />
           <h2 className="text-lg font-medium">No courses found</h2>
