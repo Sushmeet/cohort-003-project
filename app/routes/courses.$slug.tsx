@@ -14,7 +14,7 @@ import { AlertTriangle, BookOpen, CheckCircle2, Circle, Clock, Pencil, PlayCircl
 import { CourseImage } from "~/components/course-image";
 import { UserAvatar } from "~/components/user-avatar";
 import { data, isRouteErrorResponse } from "react-router";
-import { formatDuration } from "~/lib/utils";
+import { formatDuration, formatPrice } from "~/lib/utils";
 import { renderMarkdown } from "~/lib/markdown.server";
 
 export function meta({ data: loaderData }: Route.MetaArgs) {
@@ -169,11 +169,16 @@ export default function CourseDetail({ loaderData }: Route.ComponentProps) {
     0
   );
 
+  const priceLabel = formatPrice(course.price);
+
   const enrollButton = currentUserId ? (
     <fetcher.Form method="post">
       <input type="hidden" name="intent" value="enroll" />
+      <div className="mb-3 text-center text-2xl font-bold">
+        {priceLabel}
+      </div>
       <Button size="lg" className="w-full" disabled={isEnrolling}>
-        {isEnrolling ? "Enrolling..." : "Enroll Now — Free"}
+        {isEnrolling ? "Enrolling..." : `Enroll Now — ${priceLabel}`}
       </Button>
     </fetcher.Form>
   ) : (

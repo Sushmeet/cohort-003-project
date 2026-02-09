@@ -9,6 +9,7 @@ import { AlertTriangle, BookOpen, Search } from "lucide-react";
 import { CourseImage } from "~/components/course-image";
 import { UserAvatar } from "~/components/user-avatar";
 import { getCurrentUserId } from "~/lib/session";
+import { formatPrice } from "~/lib/utils";
 import { getUserEnrolledCourses } from "~/services/enrollmentService";
 import { calculateProgress, getCompletedLessonCount } from "~/services/progressService";
 
@@ -226,9 +227,8 @@ export default function CourseCatalog({ loaderData }: Route.ComponentProps) {
                     />
                     {course.instructorName}
                   </span>
-                  <span className="flex items-center gap-1">
-                    <BookOpen className="size-3" />
-                    {course.lessonCount} lessons
+                  <span className="font-semibold text-foreground">
+                    {formatPrice(course.price)}
                   </span>
                 </CardFooter>
               </Card>
