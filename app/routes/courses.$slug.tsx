@@ -1,9 +1,7 @@
-import { useEffect } from "react";
-import { Link, useFetcher } from "react-router";
-import { toast } from "sonner";
+import { Link } from "react-router";
 import type { Route } from "./+types/courses.$slug";
 import { getCourseBySlug, getCourseWithDetails, getLessonCountForCourse } from "~/services/courseService";
-import { isUserEnrolled, enrollUser } from "~/services/enrollmentService";
+import { isUserEnrolled } from "~/services/enrollmentService";
 import { calculateProgress, getLessonProgressForCourse } from "~/services/progressService";
 import { getCurrentUserId } from "~/lib/session";
 import { LessonProgressStatus } from "~/db/schema";
@@ -74,29 +72,7 @@ export async function loader({ params, request }: Route.LoaderArgs) {
   };
 }
 
-export async function action({ params, request }: Route.ActionArgs) {
-  const slug = params.slug;
-  const course = getCourseBySlug(slug);
-
-  if (!course) {
-    throw data("Course not found", { status: 404 });
-  }
-
-  const currentUserId = await getCurrentUserId(request);
-  if (!currentUserId) {
-    throw data("You must be logged in to enroll", { status: 401 });
-  }
-
-  const formData = await request.formData();
-  const intent = formData.get("intent");
-
-  if (intent === "enroll") {
-    enrollUser(currentUserId, course.id, false, false);
-    return { success: true };
-  }
-
-  throw data("Invalid action", { status: 400 });
-}
+// No action — enrollment is handled via the purchase confirmation page
 
 export function HydrateFallback() {
   return (
@@ -151,18 +127,7 @@ export function HydrateFallback() {
 
 export default function CourseDetail({ loaderData }: Route.ComponentProps) {
   const { course, salesCopyHtml, lessonCount, enrolled, progress, lessonProgressMap, currentUserId } = loaderData;
-  const fetcher = useFetcher();
-  const isEnrolling = fetcher.state !== "idle";
   const isInstructor = currentUserId === course.instructorId;
-
-  useEffect(() => {
-    if (fetcher.state === "idle" && fetcher.data?.success) {
-      toast.success("Successfully enrolled in this course!");
-    }
-    if (fetcher.state === "idle" && fetcher.data?.error) {
-      toast.error(fetcher.data.error);
-    }
-  }, [fetcher.state, fetcher.data]);
 
   const totalDuration = course.modules.reduce(
     (sum, mod) => sum + mod.lessons.reduce((s, l) => s + (l.durationMinutes ?? 0), 0),
@@ -172,15 +137,16 @@ export default function CourseDetail({ loaderData }: Route.ComponentProps) {
   const priceLabel = formatPrice(course.price);
 
   const enrollButton = currentUserId ? (
-    <fetcher.Form method="post">
-      <input type="hidden" name="intent" value="enroll" />
+    <div>
       <div className="mb-3 text-center text-2xl font-bold">
         {priceLabel}
       </div>
-      <Button size="lg" className="w-full" disabled={isEnrolling}>
-        {isEnrolling ? "Enrolling..." : `Enroll Now — ${priceLabel}`}
-      </Button>
-    </fetcher.Form>
+      <Link to={`/courses/${course.slug}/purchase`}>
+        <Button size="lg" className="w-full">
+          Enroll Now — {priceLabel}
+        </Button>
+      </Link>
+    </div>
   ) : (
     <p className="text-sm text-muted-foreground">
       Select a user from the DevUI panel to enroll.

@@ -6,6 +6,8 @@ export default [
     route("dashboard", "routes/dashboard.tsx"),
     route("courses", "routes/courses.tsx"),
     route("courses/:slug", "routes/courses.$slug.tsx"),
+    route("courses/:slug/purchase", "routes/courses.$slug.purchase.tsx"),
+    route("courses/:slug/welcome", "routes/courses.$slug.welcome.tsx"),
     route("courses/:slug/lessons/:lessonId", "routes/courses.$slug.lessons.$lessonId.tsx"),
     route("instructor", "routes/instructor.tsx"),
     route("instructor/new", "routes/instructor.new.tsx"),
