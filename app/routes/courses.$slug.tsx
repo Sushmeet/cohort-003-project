@@ -1,4 +1,6 @@
-import { Link } from "react-router";
+import { useEffect } from "react";
+import { Link, useSearchParams } from "react-router";
+import { toast } from "sonner";
 import type { Route } from "./+types/courses.$slug";
 import { getCourseBySlug, getCourseWithDetails, getLessonCountForCourse } from "~/services/courseService";
 import { isUserEnrolled } from "~/services/enrollmentService";
@@ -128,6 +130,17 @@ export function HydrateFallback() {
 export default function CourseDetail({ loaderData }: Route.ComponentProps) {
   const { course, salesCopyHtml, lessonCount, enrolled, progress, lessonProgressMap, currentUserId } = loaderData;
   const isInstructor = currentUserId === course.instructorId;
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  useEffect(() => {
+    if (searchParams.get("already_enrolled") === "1") {
+      toast.info("You're already enrolled in this course.");
+      setSearchParams((prev) => {
+        prev.delete("already_enrolled");
+        return prev;
+      }, { replace: true });
+    }
+  }, [searchParams, setSearchParams]);
 
   const totalDuration = course.modules.reduce(
     (sum, mod) => sum + mod.lessons.reduce((s, l) => s + (l.durationMinutes ?? 0), 0),

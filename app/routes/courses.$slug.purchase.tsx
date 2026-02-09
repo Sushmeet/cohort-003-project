@@ -44,7 +44,7 @@ export async function loader({ params, request }: Route.LoaderArgs) {
   }
 
   if (isUserEnrolled(currentUserId, course.id)) {
-    throw redirect(`/courses/${slug}`);
+    throw redirect(`/courses/${slug}?already_enrolled=1`);
   }
 
   const courseWithDetails = getCourseWithDetails(course.id);
