@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Form } from "react-router";
+import { Form, useLocation } from "react-router";
 import { Button } from "~/components/ui/button";
 import { cn } from "~/lib/utils";
 import type { UserRole } from "~/db/schema";
@@ -40,6 +40,7 @@ function RoleBadge({ role }: { role: string }) {
 export function DevUI({ users, currentUser }: DevUIProps) {
   const [minimized, setMinimized] = useState(false);
   const [open, setOpen] = useState(false);
+  const location = useLocation();
   if (minimized) {
     return (
       <div className="fixed bottom-4 right-4 z-50">
@@ -108,7 +109,7 @@ export function DevUI({ users, currentUser }: DevUIProps) {
                 <Form
                   key={user.id}
                   method="post"
-                  action="/api/switch-user"
+                  action={`/api/switch-user?redirectTo=${encodeURIComponent(location.pathname + location.search)}`}
                 >
                   <input type="hidden" name="userId" value={user.id} />
                   <button
