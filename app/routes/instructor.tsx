@@ -167,13 +167,13 @@ export default function InstructorDashboard({
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {courses.map((course) => (
             <Card key={course.id} className="flex flex-col overflow-hidden pt-0">
-              <div className="aspect-video overflow-hidden">
+              <Link to={`/courses/${course.slug}`} className="aspect-video overflow-hidden">
                 <CourseImage
                   src={course.coverImageUrl}
                   alt={course.title}
-                  className="h-full w-full object-cover"
+                  className="h-full w-full object-cover transition-transform hover:scale-105"
                 />
-              </div>
+              </Link>
               <CardHeader>
                 <div className="flex items-start justify-between gap-2">
                   <Link

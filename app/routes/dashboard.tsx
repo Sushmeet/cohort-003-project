@@ -143,13 +143,13 @@ export default function Dashboard({ loaderData }: Route.ComponentProps) {
               <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
                 {inProgressCourses.map((course) => (
                   <Card key={course.enrollmentId} className="flex flex-col overflow-hidden pt-0">
-                    <div className="aspect-video overflow-hidden">
+                    <Link to={`/courses/${course.courseSlug}`} className="aspect-video overflow-hidden">
                       <CourseImage
                         src={course.coverImageUrl}
                         alt={course.courseTitle}
-                        className="h-full w-full object-cover"
+                        className="h-full w-full object-cover transition-transform hover:scale-105"
                       />
-                    </div>
+                    </Link>
                     <CardHeader>
                       <Link
                         to={`/courses/${course.courseSlug}`}
@@ -212,16 +212,16 @@ export default function Dashboard({ loaderData }: Route.ComponentProps) {
               <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
                 {completedCourses.map((course) => (
                   <Card key={course.enrollmentId} className="flex flex-col overflow-hidden pt-0">
-                    <div className="relative aspect-video overflow-hidden">
+                    <Link to={`/courses/${course.courseSlug}`} className="relative aspect-video overflow-hidden">
                       <CourseImage
                         src={course.coverImageUrl}
                         alt={course.courseTitle}
-                        className="h-full w-full object-cover"
+                        className="h-full w-full object-cover transition-transform hover:scale-105"
                       />
                       <div className="absolute inset-0 flex items-center justify-center bg-black/30">
                         <CheckCircle2 className="size-12 text-white" />
                       </div>
-                    </div>
+                    </Link>
                     <CardHeader>
                       <Link
                         to={`/courses/${course.courseSlug}`}
