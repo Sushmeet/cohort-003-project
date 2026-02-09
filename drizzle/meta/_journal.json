@@ -8,6 +8,13 @@
       "when": 1770649064936,
       "tag": "0000_dizzy_fenris",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1770649315128,
+      "tag": "0001_cynical_sunspot",
+      "breakpoints": true
     }
   ]
 }

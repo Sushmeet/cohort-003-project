@@ -89,6 +89,7 @@ export const lessons = sqliteTable("lessons", {
   title: text("title").notNull(),
   content: text("content"),
   videoUrl: text("video_url"),
+  githubRepoUrl: text("github_repo_url"),
   position: integer("position").notNull(),
   durationMinutes: integer("duration_minutes"),
   createdAt: text("created_at")

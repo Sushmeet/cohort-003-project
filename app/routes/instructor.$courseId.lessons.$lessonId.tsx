@@ -14,7 +14,7 @@ import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 import { MonacoMarkdownEditor } from "~/components/monaco-markdown-editor";
-import { AlertTriangle, ArrowLeft, ClipboardList, ExternalLink, Save } from "lucide-react";
+import { AlertTriangle, ArrowLeft, ClipboardList, ExternalLink, Github, Save } from "lucide-react";
 import { data, isRouteErrorResponse } from "react-router";
 import { z } from "zod";
 import { parseFormData, parseParams } from "~/lib/validation";
@@ -29,6 +29,7 @@ const updateLessonSchema = z.object({
   content: z.string().optional(),
   videoUrl: z.string().trim().optional(),
   durationMinutes: z.string().optional(),
+  githubRepoUrl: z.string().trim().optional(),
 });
 
 export function meta({ data: loaderData }: Route.MetaArgs) {
@@ -132,14 +133,14 @@ export async function action({ params, request }: Route.ActionArgs) {
   }
 
   if (parsed.data.intent === "update-lesson") {
-    const { content, videoUrl, durationMinutes: durationStr } = parsed.data;
+    const { content, videoUrl, durationMinutes: durationStr, githubRepoUrl } = parsed.data;
     const durationMinutes = durationStr ? parseInt(durationStr, 10) : null;
 
     if (durationMinutes !== null && (isNaN(durationMinutes) || durationMinutes < 0)) {
       return data({ error: "Duration must be a positive number." }, { status: 400 });
     }
 
-    updateLesson(lessonId, null, content ?? null, videoUrl || null, durationMinutes);
+    updateLesson(lessonId, null, content ?? null, videoUrl || null, durationMinutes, githubRepoUrl || null);
     return { success: true };
   }
 
@@ -157,11 +158,15 @@ export default function InstructorLessonEditor({
   const [durationMinutes, setDurationMinutes] = useState(
     lesson.durationMinutes?.toString() ?? ""
   );
+  const [githubRepoUrl, setGithubRepoUrl] = useState(
+    lesson.githubRepoUrl ?? ""
+  );
 
   const hasChanges =
     content !== (lesson.content ?? "") ||
     videoUrl !== (lesson.videoUrl ?? "") ||
-    durationMinutes !== (lesson.durationMinutes?.toString() ?? "");
+    durationMinutes !== (lesson.durationMinutes?.toString() ?? "") ||
+    githubRepoUrl !== (lesson.githubRepoUrl ?? "");
 
   const blocker = useBlocker(hasChanges);
 
@@ -190,6 +195,7 @@ export default function InstructorLessonEditor({
         content,
         videoUrl,
         durationMinutes,
+        githubRepoUrl,
       },
       { method: "post" }
     );
@@ -321,6 +327,28 @@ export default function InstructorLessonEditor({
                 onChange={(e) => setDurationMinutes(e.target.value)}
                 placeholder="e.g. 15"
                 className="max-w-32"
+              />
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* GitHub Repo */}
+        <Card>
+          <CardHeader>
+            <h2 className="text-lg font-semibold">GitHub Repository</h2>
+            <p className="text-sm text-muted-foreground">
+              Link to a GitHub repository for this lesson's code.
+            </p>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              <Label htmlFor="githubRepoUrl">Repository URL</Label>
+              <Input
+                id="githubRepoUrl"
+                type="url"
+                value={githubRepoUrl}
+                onChange={(e) => setGithubRepoUrl(e.target.value)}
+                placeholder="https://github.com/owner/repo"
               />
             </div>
           </CardContent>

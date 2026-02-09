@@ -64,13 +64,15 @@ export function updateLesson(
   title: string | null,
   content: string | null,
   videoUrl: string | null,
-  durationMinutes: number | null
+  durationMinutes: number | null,
+  githubRepoUrl: string | null = null
 ) {
   const updates: Record<string, unknown> = {};
   if (title !== null) updates.title = title;
   if (content !== null) updates.content = content;
   if (videoUrl !== null) updates.videoUrl = videoUrl;
   if (durationMinutes !== null) updates.durationMinutes = durationMinutes;
+  if (githubRepoUrl !== null) updates.githubRepoUrl = githubRepoUrl;
 
   if (Object.keys(updates).length === 0) {
     return getLessonById(id);

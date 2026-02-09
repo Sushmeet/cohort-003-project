@@ -231,6 +231,7 @@ By the end of this course, you'll understand why TypeScript has become the defau
           title: "What is TypeScript?",
           duration: 8,
           videoUrl: "https://www.youtube.com/watch?v=zQnBQ4tB3ZA",
+          githubRepoUrl: "https://github.com/total-typescript/ts-intro-what-is-ts",
           content: `## What is TypeScript?
 
 TypeScript is a typed superset of JavaScript that compiles to plain JavaScript. It adds optional static typing and class-based object-oriented programming to the language.
@@ -265,6 +266,7 @@ The \`tsconfig.json\` file configures the TypeScript compiler options for your p
           title: "Your First TypeScript Program",
           duration: 15,
           videoUrl: "https://www.youtube.com/watch?v=zQnBQ4tB3ZA",
+          githubRepoUrl: "https://github.com/total-typescript/ts-intro-first-program",
           content: `## Hello, TypeScript!
 
 Let's write our first TypeScript program and see the compilation process in action.
@@ -375,6 +377,7 @@ const multiply: (a: number, b: number) => number = (a, b) => a * b;
           title: "Generics Basics",
           duration: 20,
           videoUrl: "https://www.youtube.com/watch?v=zQnBQ4tB3ZA",
+          githubRepoUrl: "https://github.com/total-typescript/ts-generics-basics",
           content: `## Introduction to Generics
 
 Generics let you write reusable code that works with multiple types while maintaining type safety.
@@ -524,6 +527,7 @@ type CSSProperty = \\\`color-\\\${Color}\\\`;
           title: "TypeScript with React",
           duration: 22,
           videoUrl: "https://www.youtube.com/watch?v=zQnBQ4tB3ZA",
+          githubRepoUrl: "https://github.com/total-typescript/ts-react-examples",
           content: `## TypeScript + React
 
 Learn how to use TypeScript effectively in React applications.
@@ -603,6 +607,7 @@ Practice by converting an existing JavaScript project to TypeScript. Start with 
           title: lessonData.title,
           content: lessonData.content,
           videoUrl: lessonData.videoUrl ?? null,
+          githubRepoUrl: ("githubRepoUrl" in lessonData ? lessonData.githubRepoUrl : null) ?? null,
           position: li + 1,
           durationMinutes: lessonData.duration,
           createdAt: daysAgo(90 - mi),
@@ -695,6 +700,7 @@ REST (Representational State Transfer) is an architectural style for designing n
           title: "Setting Up Express",
           duration: 15,
           videoUrl: "https://www.youtube.com/watch?v=lsMQRaeKNDk",
+          githubRepoUrl: "https://github.com/total-typescript/rest-api-express-setup",
           content: `## Express.js Setup
 
 Express is the most popular Node.js web framework for building APIs.
@@ -856,6 +862,7 @@ const db = drizzle(sqlite);
           title: "CRUD Operations",
           duration: 20,
           videoUrl: "https://www.youtube.com/watch?v=lsMQRaeKNDk",
+          githubRepoUrl: "https://github.com/total-typescript/rest-api-crud-operations",
           content: `## Building CRUD Endpoints
 
 Implement Create, Read, Update, Delete operations for your API resources.
@@ -1097,6 +1104,7 @@ You've completed the Building REST APIs course. You now have the skills to build
           title: lessonData.title,
           content: lessonData.content,
           videoUrl: lessonData.videoUrl ?? null,
+          githubRepoUrl: ("githubRepoUrl" in lessonData ? lessonData.githubRepoUrl : null) ?? null,
           position: li + 1,
           durationMinutes: lessonData.duration,
           createdAt: daysAgo(75 - mi),
