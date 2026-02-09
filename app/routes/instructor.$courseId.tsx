@@ -49,6 +49,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import {
   ArrowLeft,
   BookOpen,
@@ -59,10 +60,12 @@ import {
   Pencil,
   Plus,
   Save,
+  Settings,
   Trash2,
   Users,
   AlertTriangle,
   Globe,
+  FileText,
 } from "lucide-react";
 import { data, isRouteErrorResponse } from "react-router";
 import { z } from "zod";
@@ -1122,303 +1125,363 @@ export default function InstructorCourseEditor({
         </div>
       </div>
 
-      {/* Status + Actions */}
-      <div className="mb-8 flex flex-wrap items-center gap-4">
-        <div className="flex items-center gap-2">
-          <span className="text-sm font-medium">Status:</span>
-          <Select
-            value={course.status}
-            onValueChange={handleStatusChange}
-          >
-            <SelectTrigger className="w-36">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value={CourseStatus.Draft}>Draft</SelectItem>
-              <SelectItem value={CourseStatus.Published}>
-                Published
-              </SelectItem>
-              <SelectItem value={CourseStatus.Archived}>
-                Archived
-              </SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+      {/* Tabs */}
+      <Tabs defaultValue="content">
+        <TabsList>
+          <TabsTrigger value="content">
+            <BookOpen className="size-4" />
+            Content
+          </TabsTrigger>
+          <TabsTrigger value="settings">
+            <Settings className="size-4" />
+            Settings
+          </TabsTrigger>
+          <TabsTrigger value="sales-copy">
+            <FileText className="size-4" />
+            Sales Copy
+          </TabsTrigger>
+          <TabsTrigger value="students">
+            <Users className="size-4" />
+            Students
+          </TabsTrigger>
+        </TabsList>
 
-        <div className="flex items-center gap-2">
-          <span className="text-sm font-medium">Price:</span>
-          <div className="flex items-center gap-1">
-            <span className="text-sm text-muted-foreground">$</span>
-            <Input
-              type="number"
-              min="0"
-              max="9999.99"
-              step="0.01"
-              defaultValue={(course.price / 100).toFixed(2)}
-              className="w-28"
-              onBlur={(e) => {
-                const val = parseFloat(e.target.value);
-                if (!isNaN(val) && val >= 0 && Math.round(val * 100) !== course.price) {
-                  priceFetcher.submit(
-                    { intent: "update-price", price: e.target.value },
-                    { method: "post" }
-                  );
-                }
-              }}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  (e.target as HTMLInputElement).blur();
-                }
-              }}
-            />
-          </div>
-        </div>
-
-        <div className="flex items-center gap-2" title="Purchasing Power Parity: applies location-based discounts for students in lower-income countries">
-          <Globe className="size-4 text-muted-foreground" />
-          <span className="text-sm font-medium">PPP:</span>
-          <button
-            type="button"
-            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-              course.pppEnabled ? "bg-primary" : "bg-muted"
-            }`}
-            onClick={() => {
-              pppFetcher.submit(
-                { intent: "update-ppp-enabled", pppEnabled: String(!course.pppEnabled) },
-                { method: "post" }
-              );
-            }}
-          >
-            <span
-              className={`inline-block size-4 transform rounded-full bg-white transition-transform ${
-                course.pppEnabled ? "translate-x-6" : "translate-x-1"
-              }`}
-            />
-          </button>
-          <span className="text-xs text-muted-foreground">
-            {course.pppEnabled ? "On" : "Off"}
-          </span>
-        </div>
-
-        <Link to={`/courses/${course.slug}`}>
-          <Button variant="outline" size="sm">
-            View Public Page
-          </Button>
-        </Link>
-
-        <Link to={`/instructor/${course.id}/students`}>
-          <Button variant="outline" size="sm">
-            <Users className="mr-1.5 size-4" />
-            Student Roster
-          </Button>
-        </Link>
-      </div>
-
-      {/* Sales Copy */}
-      <div className="mb-8">
-        <Card>
-          <CardHeader>
-            <h2 className="text-lg font-semibold">Sales Copy</h2>
-            <p className="text-sm text-muted-foreground">
-              Write the course sales copy in Markdown. This is shown on the public course page. Press Ctrl+S to format and save.
-            </p>
-          </CardHeader>
-          <CardContent>
-            <MonacoMarkdownEditor
-              value={salesCopy}
-              onChange={setSalesCopy}
-              onSave={handleSalesCopySave}
-            />
-            <div className="mt-4 flex items-center gap-4">
-              <Button
-                onClick={handleSalesCopySave}
-                disabled={!salesCopyHasChanges || salesCopyFetcher.state !== "idle"}
-              >
-                <Save className="mr-1.5 size-4" />
-                {salesCopyFetcher.state !== "idle" ? "Saving..." : "Save Sales Copy"}
-              </Button>
-              {salesCopyHasChanges && (
-                <span className="text-sm text-muted-foreground">
-                  You have unsaved changes.
-                </span>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Course Content */}
-      <div>
-        <h2 className="mb-4 text-2xl font-bold">Course Content</h2>
-        {course.modules.length === 0 ? (
-          <Card>
-            <CardContent className="py-8 text-center">
-              <BookOpen className="mx-auto mb-3 size-8 text-muted-foreground/50" />
-              <p className="text-muted-foreground">
-                No modules yet. Add your first module to start building content.
-              </p>
-            </CardContent>
-          </Card>
-        ) : (
-          <DragDropContext onDragEnd={handleDragEnd}>
-            <Droppable droppableId="modules" type="module">
-              {(provided) => (
-                <div
-                  className="space-y-4"
-                  ref={provided.innerRef}
-                  {...provided.droppableProps}
-                >
-                  {course.modules.map((mod, index) => (
-                    <Draggable
-                      key={mod.id}
-                      draggableId={String(mod.id)}
-                      index={index}
-                    >
-                      {(provided, snapshot) => (
-                        <div
-                          ref={provided.innerRef}
-                          {...provided.draggableProps}
-                        >
-                          <Card
-                            className={
-                              snapshot.isDragging
-                                ? "shadow-lg ring-2 ring-primary/50"
-                                : ""
-                            }
+        {/* Content Tab */}
+        <TabsContent value="content" className="mt-6">
+          {course.modules.length === 0 ? (
+            <Card>
+              <CardContent className="py-8 text-center">
+                <BookOpen className="mx-auto mb-3 size-8 text-muted-foreground/50" />
+                <p className="text-muted-foreground">
+                  No modules yet. Add your first module to start building content.
+                </p>
+              </CardContent>
+            </Card>
+          ) : (
+            <DragDropContext onDragEnd={handleDragEnd}>
+              <Droppable droppableId="modules" type="module">
+                {(provided) => (
+                  <div
+                    className="space-y-4"
+                    ref={provided.innerRef}
+                    {...provided.droppableProps}
+                  >
+                    {course.modules.map((mod, index) => (
+                      <Draggable
+                        key={mod.id}
+                        draggableId={String(mod.id)}
+                        index={index}
+                      >
+                        {(provided, snapshot) => (
+                          <div
+                            ref={provided.innerRef}
+                            {...provided.draggableProps}
                           >
-                            <CardHeader>
-                              <div className="flex items-center justify-between">
-                                <div className="flex items-center gap-2 flex-1">
-                                  <div
-                                    {...provided.dragHandleProps}
-                                    className="cursor-grab active:cursor-grabbing rounded p-1 text-muted-foreground hover:text-foreground hover:bg-muted"
-                                  >
-                                    <GripVertical className="size-5" />
-                                  </div>
-                                  <div className="flex-1">
-                                    <InlineEditableModuleTitle
-                                      value={mod.title}
-                                      moduleId={mod.id}
-                                    />
-                                    <p className="mt-1 px-2 text-sm text-muted-foreground">
-                                      {mod.lessons.length}{" "}
-                                      {mod.lessons.length === 1
-                                        ? "lesson"
-                                        : "lessons"}
-                                    </p>
-                                  </div>
-                                </div>
-                                <DeleteModuleButton
-                                  moduleId={mod.id}
-                                  moduleTitle={mod.title}
-                                />
-                              </div>
-                            </CardHeader>
-                            <CardContent>
-                              {mod.lessons.length === 0 ? (
-                                <p className="px-3 py-2 text-sm text-muted-foreground">
-                                  No lessons yet.
-                                </p>
-                              ) : (
-                                <Droppable
-                                  droppableId={`lessons-${mod.id}`}
-                                  type="lesson"
-                                >
-                                  {(lessonDropProvided) => (
-                                    <ul
-                                      className="space-y-1"
-                                      ref={lessonDropProvided.innerRef}
-                                      {...lessonDropProvided.droppableProps}
+                            <Card
+                              className={
+                                snapshot.isDragging
+                                  ? "shadow-lg ring-2 ring-primary/50"
+                                  : ""
+                              }
+                            >
+                              <CardHeader>
+                                <div className="flex items-center justify-between">
+                                  <div className="flex items-center gap-2 flex-1">
+                                    <div
+                                      {...provided.dragHandleProps}
+                                      className="cursor-grab active:cursor-grabbing rounded p-1 text-muted-foreground hover:text-foreground hover:bg-muted"
                                     >
-                                      {mod.lessons.map((lesson, lessonIndex) => (
-                                        <Draggable
-                                          key={lesson.id}
-                                          draggableId={`lesson-${lesson.id}`}
-                                          index={lessonIndex}
-                                        >
-                                          {(lessonProvided, lessonSnapshot) => (
-                                            <li
-                                              ref={lessonProvided.innerRef}
-                                              {...lessonProvided.draggableProps}
-                                            >
-                                              <div
-                                                className={`flex items-center gap-2 rounded-md px-3 py-1.5 text-sm${
-                                                  lessonSnapshot.isDragging
-                                                    ? " bg-muted shadow-md ring-1 ring-primary/30"
-                                                    : ""
-                                                }`}
+                                      <GripVertical className="size-5" />
+                                    </div>
+                                    <div className="flex-1">
+                                      <InlineEditableModuleTitle
+                                        value={mod.title}
+                                        moduleId={mod.id}
+                                      />
+                                      <p className="mt-1 px-2 text-sm text-muted-foreground">
+                                        {mod.lessons.length}{" "}
+                                        {mod.lessons.length === 1
+                                          ? "lesson"
+                                          : "lessons"}
+                                      </p>
+                                    </div>
+                                  </div>
+                                  <DeleteModuleButton
+                                    moduleId={mod.id}
+                                    moduleTitle={mod.title}
+                                  />
+                                </div>
+                              </CardHeader>
+                              <CardContent>
+                                {mod.lessons.length === 0 ? (
+                                  <p className="px-3 py-2 text-sm text-muted-foreground">
+                                    No lessons yet.
+                                  </p>
+                                ) : (
+                                  <Droppable
+                                    droppableId={`lessons-${mod.id}`}
+                                    type="lesson"
+                                  >
+                                    {(lessonDropProvided) => (
+                                      <ul
+                                        className="space-y-1"
+                                        ref={lessonDropProvided.innerRef}
+                                        {...lessonDropProvided.droppableProps}
+                                      >
+                                        {mod.lessons.map((lesson, lessonIndex) => (
+                                          <Draggable
+                                            key={lesson.id}
+                                            draggableId={`lesson-${lesson.id}`}
+                                            index={lessonIndex}
+                                          >
+                                            {(lessonProvided, lessonSnapshot) => (
+                                              <li
+                                                ref={lessonProvided.innerRef}
+                                                {...lessonProvided.draggableProps}
                                               >
                                                 <div
-                                                  {...lessonProvided.dragHandleProps}
-                                                  className="cursor-grab active:cursor-grabbing rounded p-0.5 text-muted-foreground hover:text-foreground hover:bg-muted"
+                                                  className={`flex items-center gap-2 rounded-md px-3 py-1.5 text-sm${
+                                                    lessonSnapshot.isDragging
+                                                      ? " bg-muted shadow-md ring-1 ring-primary/30"
+                                                      : ""
+                                                  }`}
                                                 >
-                                                  <GripVertical className="size-4" />
-                                                </div>
-                                                <div className="flex-1">
-                                                  <InlineEditableLessonTitle
-                                                    value={lesson.title}
+                                                  <div
+                                                    {...lessonProvided.dragHandleProps}
+                                                    className="cursor-grab active:cursor-grabbing rounded p-0.5 text-muted-foreground hover:text-foreground hover:bg-muted"
+                                                  >
+                                                    <GripVertical className="size-4" />
+                                                  </div>
+                                                  <div className="flex-1">
+                                                    <InlineEditableLessonTitle
+                                                      value={lesson.title}
+                                                      lessonId={lesson.id}
+                                                    />
+                                                  </div>
+                                                  {lesson.durationMinutes && (
+                                                    <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                                                      <Clock className="size-3" />
+                                                      {formatDuration(lesson.durationMinutes, true, false, false)}
+                                                    </span>
+                                                  )}
+                                                  <Link
+                                                    to={`/courses/${course.slug}/lessons/${lesson.id}`}
+                                                    title="View lesson"
+                                                  >
+                                                    <Button
+                                                      variant="ghost"
+                                                      size="sm"
+                                                      className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground"
+                                                    >
+                                                      <Eye className="size-3.5" />
+                                                    </Button>
+                                                  </Link>
+                                                  <Link
+                                                    to={`/instructor/${course.id}/lessons/${lesson.id}`}
+                                                    title="Edit lesson"
+                                                  >
+                                                    <Button
+                                                      variant="ghost"
+                                                      size="sm"
+                                                      className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground"
+                                                    >
+                                                      <FileEdit className="size-3.5" />
+                                                    </Button>
+                                                  </Link>
+                                                  <DeleteLessonButton
                                                     lessonId={lesson.id}
+                                                    lessonTitle={lesson.title}
                                                   />
                                                 </div>
-                                                {lesson.durationMinutes && (
-                                                  <span className="flex items-center gap-1 text-xs text-muted-foreground">
-                                                    <Clock className="size-3" />
-                                                    {formatDuration(lesson.durationMinutes, true, false, false)}
-                                                  </span>
-                                                )}
-                                                <Link
-                                                  to={`/courses/${course.slug}/lessons/${lesson.id}`}
-                                                  title="View lesson"
-                                                >
-                                                  <Button
-                                                    variant="ghost"
-                                                    size="sm"
-                                                    className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground"
-                                                  >
-                                                    <Eye className="size-3.5" />
-                                                  </Button>
-                                                </Link>
-                                                <Link
-                                                  to={`/instructor/${course.id}/lessons/${lesson.id}`}
-                                                  title="Edit lesson"
-                                                >
-                                                  <Button
-                                                    variant="ghost"
-                                                    size="sm"
-                                                    className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground"
-                                                  >
-                                                    <FileEdit className="size-3.5" />
-                                                  </Button>
-                                                </Link>
-                                                <DeleteLessonButton
-                                                  lessonId={lesson.id}
-                                                  lessonTitle={lesson.title}
-                                                />
-                                              </div>
-                                            </li>
-                                          )}
-                                        </Draggable>
-                                      ))}
-                                      {lessonDropProvided.placeholder}
-                                    </ul>
-                                  )}
-                                </Droppable>
-                              )}
-                              <AddLessonForm moduleId={mod.id} />
-                            </CardContent>
-                          </Card>
-                        </div>
-                      )}
-                    </Draggable>
-                  ))}
-                  {provided.placeholder}
+                                              </li>
+                                            )}
+                                          </Draggable>
+                                        ))}
+                                        {lessonDropProvided.placeholder}
+                                      </ul>
+                                    )}
+                                  </Droppable>
+                                )}
+                                <AddLessonForm moduleId={mod.id} />
+                              </CardContent>
+                            </Card>
+                          </div>
+                        )}
+                      </Draggable>
+                    ))}
+                    {provided.placeholder}
+                  </div>
+                )}
+              </Droppable>
+            </DragDropContext>
+          )}
+          <AddModuleForm />
+        </TabsContent>
+
+        {/* Settings Tab */}
+        <TabsContent value="settings" className="mt-6">
+          <div className="space-y-6">
+            <Card>
+              <CardHeader>
+                <h2 className="text-lg font-semibold">Course Status</h2>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-medium">Status:</span>
+                  <Select
+                    value={course.status}
+                    onValueChange={handleStatusChange}
+                  >
+                    <SelectTrigger className="w-36">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value={CourseStatus.Draft}>Draft</SelectItem>
+                      <SelectItem value={CourseStatus.Published}>
+                        Published
+                      </SelectItem>
+                      <SelectItem value={CourseStatus.Archived}>
+                        Archived
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
-              )}
-            </Droppable>
-          </DragDropContext>
-        )}
-        <AddModuleForm />
-      </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <h2 className="text-lg font-semibold">Pricing</h2>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-medium">Price:</span>
+                    <div className="flex items-center gap-1">
+                      <span className="text-sm text-muted-foreground">$</span>
+                      <Input
+                        type="number"
+                        min="0"
+                        max="9999.99"
+                        step="0.01"
+                        defaultValue={(course.price / 100).toFixed(2)}
+                        className="w-28"
+                        onBlur={(e) => {
+                          const val = parseFloat(e.target.value);
+                          if (!isNaN(val) && val >= 0 && Math.round(val * 100) !== course.price) {
+                            priceFetcher.submit(
+                              { intent: "update-price", price: e.target.value },
+                              { method: "post" }
+                            );
+                          }
+                        }}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            (e.target as HTMLInputElement).blur();
+                          }
+                        }}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2" title="Purchasing Power Parity: applies location-based discounts for students in lower-income countries">
+                    <Globe className="size-4 text-muted-foreground" />
+                    <span className="text-sm font-medium">PPP:</span>
+                    <button
+                      type="button"
+                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                        course.pppEnabled ? "bg-primary" : "bg-muted"
+                      }`}
+                      onClick={() => {
+                        pppFetcher.submit(
+                          { intent: "update-ppp-enabled", pppEnabled: String(!course.pppEnabled) },
+                          { method: "post" }
+                        );
+                      }}
+                    >
+                      <span
+                        className={`inline-block size-4 transform rounded-full bg-white transition-transform ${
+                          course.pppEnabled ? "translate-x-6" : "translate-x-1"
+                        }`}
+                      />
+                    </button>
+                    <span className="text-xs text-muted-foreground">
+                      {course.pppEnabled ? "On" : "Off"}
+                    </span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <h2 className="text-lg font-semibold">Links</h2>
+              </CardHeader>
+              <CardContent>
+                <div className="flex flex-wrap gap-3">
+                  <Link to={`/courses/${course.slug}`}>
+                    <Button variant="outline" size="sm">
+                      <Eye className="mr-1.5 size-4" />
+                      View Public Page
+                    </Button>
+                  </Link>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+
+        {/* Sales Copy Tab */}
+        <TabsContent value="sales-copy" className="mt-6">
+          <Card>
+            <CardHeader>
+              <h2 className="text-lg font-semibold">Sales Copy</h2>
+              <p className="text-sm text-muted-foreground">
+                Write the course sales copy in Markdown. This is shown on the public course page. Press Ctrl+S to format and save.
+              </p>
+            </CardHeader>
+            <CardContent>
+              <MonacoMarkdownEditor
+                value={salesCopy}
+                onChange={setSalesCopy}
+                onSave={handleSalesCopySave}
+              />
+              <div className="mt-4 flex items-center gap-4">
+                <Button
+                  onClick={handleSalesCopySave}
+                  disabled={!salesCopyHasChanges || salesCopyFetcher.state !== "idle"}
+                >
+                  <Save className="mr-1.5 size-4" />
+                  {salesCopyFetcher.state !== "idle" ? "Saving..." : "Save Sales Copy"}
+                </Button>
+                {salesCopyHasChanges && (
+                  <span className="text-sm text-muted-foreground">
+                    You have unsaved changes.
+                  </span>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Students Tab */}
+        <TabsContent value="students" className="mt-6">
+          <Card>
+            <CardContent className="py-8 text-center">
+              <Users className="mx-auto mb-3 size-8 text-muted-foreground/50" />
+              <p className="mb-4 text-muted-foreground">
+                View and manage enrolled students.
+              </p>
+              <Link to={`/instructor/${course.id}/students`}>
+                <Button variant="outline">
+                  <Users className="mr-1.5 size-4" />
+                  Open Student Roster
+                </Button>
+              </Link>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
