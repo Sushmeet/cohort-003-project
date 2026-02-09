@@ -1,6 +1,6 @@
 ---
 name: pnpm-not-found
-description: Fix "pnpm: command not found" errors by enabling corepack. Use when pnpm cannot be found, corepack errors appear, or package manager is missing.
+description: Fix "pnpm command not found" errors by enabling corepack. Use when pnpm cannot be found, corepack errors appear, or package manager is missing.
 ---
 
 # pnpm Not Found Fix
